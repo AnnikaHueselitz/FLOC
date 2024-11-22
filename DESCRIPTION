@@ -21,3 +21,5 @@ LazyData: true
 RoxygenNote: 7.3.1
 Imports: 
     ggplot2
+URL: https://github.com/AnnikaHueselitz/FLOC
+BugReports: https://github.com/AnnikaHueselitz/FLOC/issues
