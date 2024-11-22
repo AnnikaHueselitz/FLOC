@@ -1,35 +1,22 @@
----
-output: github_document
----
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "man/figures/README-",
-  out.width = "100%"
-)
-```
-
 
 # FLOC : Fast Limited-memory Optimal Change detector
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of FLOC is to sequentially detect a change in a piecewise linear 
-model. 
-The package also provides a method to tune the threshold of the algorithm to
-bound the type I error, a function to estimate the false alarm probability and
-a function to estimate the expected detection delay.
+The goal of FLOC is to sequentially detect a change in a piecewise
+linear model. The package also provides a method to tune the threshold
+of the algorithm to bound the type I error, a function to estimate the
+false alarm probability and a function to estimate the expected
+detection delay.
 
 ## Installation
 
 You can install the development version of FLOC like so:
 
-``` {r, eval = FALSE}
+``` r
 install.packages("devtools")
 devtools::install_github("AnnikaHueselitz/FLOC")
 ```
@@ -41,11 +28,11 @@ This is a basic example which shows you how to solve a common problem:
 For this example we want to let the algorithm run with bins that are 5
 data points wide.
 
-First we want to tune the type I error such that with 500 
-historical observations available the probability to get a false alarm in the 
-first 500 data points is approximately 0.5.
+First we want to tune the type I error such that with 500 historical
+observations available the probability to get a false alarm in the first
+500 data points is approximately 0.5.
 
-```{r thresholdtuning}
+``` r
 #load package
 library(FLOC)
 
@@ -71,7 +58,7 @@ rho <- t_tuning(N, tau, k, eta, r)
 
 Next we want to simulate some data to test the algorithm on:
 
-```{r detector}
+``` r
 #set seed for reproducibility
 set.seed(2)
 
@@ -120,26 +107,30 @@ if (n <= tau_0) {
 } else {
 print(paste("A detection was made at observation: ",n, "That is a detection delay of: ", n - tau_0))
 }
-
+#> [1] "A detection was made at observation:  207 That is a detection delay of:  7"
 ```
+
 Plot the detection to visualize it:
 
-
-```{r plot}
+``` r
 
 plot_detection(data, tau_0, alpha_minus, beta_minus, alpha_plus, beta_plus)
-
 ```
 
+<img src="man/figures/README-plot-1.png" width="100%" />
 
-Next we can check if the false alarm probability that we wanted to achieve with the threshold tuning is reasonable, by estimating it:
+Next we can check if the false alarm probability that we wanted to
+achieve with the threshold tuning is reasonable, by estimating it:
 
-```{r false alarm probability}
+``` r
 est_faprob(N, rho$both["jump"], rho$both["kink"], tau, k)
+#> [1] 0.56
 ```
 
-Last we can check estimate the expected detection delay for the above example:
+Last we can check estimate the expected detection delay for the above
+example:
 
-```{r expected detection delay}
+``` r
 est_detdel(N, rho$both["jump"], rho$both["kink"], k, 1, 0.01)
+#> [1] 12
 ```
