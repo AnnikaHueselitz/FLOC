@@ -1,0 +1,145 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+
+# FLOC : Fast Limited-memory Optimal Change detector
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of FLOC is to sequentially detect a change in a piecewise linear 
+model. 
+The package also provides a method to tune the threshold of the algorithm to
+bound the type I error, a function to estimate the false alarm probability and
+a function to estimate the expected detection delay.
+
+## Installation
+
+You can install the development version of FLOC like so:
+
+``` {r, eval = FALSE}
+install.packages("devtools")
+devtools::install_github("AnnikaHueselitz/FLOC")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+For this example we want to let the algorithm run with bins that are 5
+data points wide.
+
+First we want to tune the type I error such that with 500 
+historical observations available the probability to get a false alarm in the 
+first 500 data points is approximately 0.5.
+
+```{r thresholdtuning}
+#load package
+library(FLOC)
+
+#set seed for reproducibility
+set.seed(1)
+
+#bin size
+N <- 5
+
+#amount of historical data
+k <- 500
+
+#the algorithm should have a false alarm in tau data points with a probability of eta
+eta <- 0.5
+tau <- 500 
+
+#number of data sets to draw, the threshold tuning gets exacter when this is higher, but the computation is then slower
+r <- 1000
+
+#tuning of the threshold
+rho <- t_tuning(N, tau, k, eta, r)
+```
+
+Next we want to simulate some data to test the algorithm on:
+
+```{r detector}
+#set seed for reproducibility
+set.seed(2)
+
+#true changepoint
+tau_0 <- 200
+
+#intercept at change point before change
+alpha_minus <- 0
+
+#slope before change
+beta_minus <- 0
+
+#intercept at change point after change
+alpha_plus <- 1
+
+#slope after change
+beta_plus <- 0.1
+
+#generating historical data
+hist_data <- rnorm(k) + seg_lin_fun((1 - k):0, tau_0, alpha_minus, beta_minus, alpha_plus, beta_plus)
+
+#initalize the detector
+detector <- FLOC_init(hist_data, N, rho$both["jump"], rho$both["kink"])
+
+#initialize time and vector to save data for plot
+n <- 1
+data <- c()
+
+#generate new data as long as no detection was made and update the detector
+while (!(detector$detect_jump||detector$detect_kink)) {
+  
+  #generate new data point
+  new_data <- rnorm(1) + seg_lin_fun(n, tau_0, alpha_minus, beta_minus, alpha_plus, beta_plus)
+  
+  #save data to plot later
+  data <- c(data, new_data)
+  
+  #update detector
+  detector <- FLOC_iter(new_data, detector)
+  
+  n <- n+1
+}
+
+if (n <= tau_0) {
+  print(paste("A detection was made at observation: ",n, "That is a false alarm"))
+} else {
+print(paste("A detection was made at observation: ",n, "That is a detection delay of: ", n - tau_0))
+}
+
+```
+Plot the detection to visualize it:
+
+
+```{r plot}
+
+plot_detection(data, tau_0, alpha_minus, beta_minus, alpha_plus, beta_plus)
+
+```
+
+
+Next we can check if the false alarm probability that we wanted to achieve with the threshold tuning is reasonable, by estimating it:
+
+```{r false alarm probability}
+est_faprob(N, rho$both["jump"], rho$both["kink"], tau, k)
+```
+
+Last we can check estimate the expected detection delay for the above example:
+
+```{r expected detection delay}
+estimate_detdel(N, change_type, t, k, alpha_plus, beta_plus, alpha_minus, beta_minus)
+```

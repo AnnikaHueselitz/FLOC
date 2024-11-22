@@ -14,7 +14,7 @@
 #'
 #'@export
 #'
-#'@import ggplot2
+#'@importFrom ggplot2 ggplot ylab xlab geom_line geom_vline aes
 plot_detection <- function(data,
                            tau_0,
                            alpha_minus, beta_minus,

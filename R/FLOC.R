@@ -2,7 +2,7 @@
 #'
 #'Initializes the FLOC, Fast Limited-memory Optimal Change detector.
 #'
-#'@param data numerical vector; historical data that is available to estimate 
+#'@param data numerical vector; historical data that is available to estimate
 #'the prechange distribution from.
 #'@param N integer; number of data points in a bin
 #'@param rhoj numerical; threshold for the jump part of the algorithm.
@@ -22,26 +22,28 @@
 #'rhoj - numerical; threshold for the jump part of the algorithm.
 #'rhok - numerical; threshold for the kink part of the algorithm.
 #'
+#'@importFrom stats lm predict
+#'
 #'@export
 #'
-#'@importFrom stats lm predict
+
 
 FLOC_init <- function(data, N, rhoj, rhok){
-  
+
   #indices of the historical data
   x <- (1-length(data)):0
-  
+
   #prediction of the prechange distribution
   f <- lm(data ~ x)
   data <- data - unname(predict(f,list(x)))
-  
+
   #initialize the bins
   S <- S_init(data, N)
   W <- W_init(data, N)
-  
+
   #initialize the test statistic
   Tstat <- c(Tstat_j_calc(S,N,N),Tstat_k_calc(S,W,N,N))
-  
+
   return(list(detect_jump = FALSE,
               detect_kink = FALSE,
               iteration = 0,
@@ -57,10 +59,10 @@ FLOC_init <- function(data, N, rhoj, rhok){
 
 #'FLOC iteration
 #'
-#'Iterates the FLOC, Fast Limited-memory Optimal Change detector, for a new 
+#'Iterates the FLOC, Fast Limited-memory Optimal Change detector, for a new
 #'observation and detectcs if a change happened.
 #'
-#'@param data numerical; newest observation 
+#'@param data numerical; newest observation
 #'@param detector list; as returned by FLOC_init or FLOC_iter
 #'
 #'@return list with
@@ -82,7 +84,7 @@ FLOC_init <- function(data, N, rhoj, rhok){
 #'@importFrom stats predict
 
 FLOC_iter <- function(data,detector){
-  
+
   #needed variables from detector
   iteration = detector$iteration
   S = detector$S
@@ -91,34 +93,34 @@ FLOC_iter <- function(data,detector){
   N = detector$N
   rhoj = detector$rhoj
   rhok = detector$rhok
-  
+
   #count iteration
   iteration <- iteration + 1
-  
+
   #number of observations in last bin
   r <- (iteration -1) %% N + 1
-  
+
   #shift the bins if a new bin is started
   if(r == 1){
     S <- c(S[-1],0)
     W <- c(W[-1],0)
   }
-  
+
   #substract prechange prediction
   data <- data - unname(predict(f,list(x = iteration)))
-  
+
   #add observation to bins
   S[3] <- S[3] + data
   W[3] <- W[3] + r * data
-  
+
   #calculate test statistics
   Tstat_jump <- Tstat_j_calc(S, N, r)
   Tstat_kink <- Tstat_k_calc(S, W, N, r)
-  
+
   #do detections
   detect_jump <- Tstat_jump >= rhoj
   detect_kink <- Tstat_kink >= rhok
-  
+
   return(list(detect_jump = detect_jump,
               detect_kink = detect_kink,
               iteration = iteration,
@@ -141,18 +143,20 @@ FLOC_iter <- function(data,detector){
 #'
 #'@return S - numerical vector; the sum bins
 #'
+#'@importFrom utils tail
+#'
 #'@keywords internal
 
 S_init <- function(data, N){
-  
+
   #only the last 3*N data points are needed
   data <- tail(data, 3 * N)
-  
+
   #sort data in three bins of length N
   S1 <- sum(data[1:N])
   S2 <- sum(data[(N+1):(2*N)])
   S3 <- sum(data[(2 * N + 1):(3 * N)])
-  
+
   return(c(S1,S2,S3))
 }
 
@@ -165,18 +169,20 @@ S_init <- function(data, N){
 #'
 #'@return W - numerical vector; the weighted sum bins
 #'
+#'@importFrom utils tail
+#'
 #'@keywords internal
 
 W_init <- function(data, N){
-  
+
   #sort data in three bins of length N
   data <- tail(data, 3 * N)
-  
+
   #sort data in three bins of length N and weight it accordingly
   W1 <- sum(data[1:N] * (1:N))
   W2 <- sum(data[(N+1):(2*N)] * (1:N) )
   W3 <- sum(data[(2 * N + 1):(3 * N)] * (1:N))
-  
+
   return(c(W1,W2,W3))
 }
 
@@ -193,13 +199,13 @@ W_init <- function(data, N){
 #'@keywords internal
 
 Tstat_j_calc <- function(S, N, r){
-  
+
   #number of observations in all bins
   M <- 2 * N + r
-  
+
   #calculate the test statistic
   Tstat <- sum(S) / M
-  
+
   return(abs(Tstat))
 }
 
@@ -218,16 +224,16 @@ Tstat_j_calc <- function(S, N, r){
 
 
 Tstat_k_calc <- function(S, W, N, r){
-  
+
   #number of observations in all bins
   M <- 2 * N + r
-  
+
   #factor for weighting the test statistic
   d <- sum((1:M) * (1:M))
-  
+
   #calculate the test statistic
   Tstat <- sum(W) + 2 * N * S[3] + N * S[2]
   Tstat <- Tstat/d
-  
+
   return(abs(Tstat))
 }
