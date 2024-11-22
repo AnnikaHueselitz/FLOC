@@ -1,0 +1,133 @@
+#'estimate false alarm probability
+#'
+#'Estimates the probability of FLOC that a false alarm occurs before tau observations 
+#'for given bin size and thresholds
+#'
+#'@param N integer; number of data points in a bin
+#'@param rhoj numerical; threshold for the jump part of the algorithm.
+#'@param rhok numerical; threshold for the kink part of the algorithm.
+#'@param tau integer; number of observation to check for a false alarm
+#'@param k integer; number of observations that are available as historical data
+#'@param m integer; = 200; number of repetitions 
+#'
+#'@return numerical between 0 and 1; estimate of the false alarm probability
+#'
+#'@export
+
+est_faprob <- function(N, rhoj, rhok, tau, k, m = 200){
+  
+  #simulates m times data and checks for a false alarm
+  fa <- replicate(m, false_alarm(N, rhoj, rhok, tau, k))
+  
+  return(sum(fa)/m)
+}
+
+#'#false alarm probability
+#'
+#'Internal function that checks if a false alarm occurs before tau observations
+#'
+#'@param N integer; number of data points in a bin
+#'@param rhoj numerical; threshold for the jump part of the algorithm.
+#'@param rhok numerical; threshold for the kink part of the algorithm.
+#'@param tau integer; number of observation to check for a false alarm
+#'@param k integer; number of observations that are available as historical data
+#'
+#'@return boolean; true if a false alarm was occurs
+#'
+#'@keyword internal
+
+false_alarm <- function(N, rhoj, rhok, tau, k){
+  
+  #generate historic data and initialize the detector
+  data <- rnorm(k)
+  detector <- FLOC_init(data, N, rhoj, rhok)
+  
+  
+  while(detector$iteration <= tau){
+    
+    #iterate the detector with a new data point
+    data <- rnorm(1)
+    detector <- FLOC_iter(data, detector)
+    
+    if(detector$detect_jump | detector$detect_kink){
+      
+      #a false detection was made
+      return(TRUE)
+      
+    }
+    
+  }
+  
+  #No false alarm in tau observations
+  return(FALSE)
+}
+
+#'estimate expected detection delay
+#'
+#'Estimates the expected detection delay for given bin size, thresholds and 
+#'change sizes
+#'
+#'@param N integer; number of data points in a bin
+#'@param rhoj numerical; threshold for the jump part of the algorithm.
+#'@param rhok numerical; threshold for the kink part of the algorithm.
+#'@param k integer; number of observations that are available as historical data
+#'@param jump numerical; size of the jump, size of change in the intercept at 
+#'the changepoint
+#'@param kink numerical; size of the kink, size of change in the slope
+#'@param m integer; = 200; number of repetitions 
+#'
+#'@return integer; estimate of the expected detection delay rounded to the next 
+#'integer
+#'
+#'@export
+
+est_detdel <- function(N, rhoj, rhok, k, jump, kink, m = 200){
+  
+  #generates data m times and reports the detection delay
+  detdel <- replicate(m, detection_delay(N, rhoj, rhok,  k, jump, kink))
+  
+  return(round(mean(detdel)))
+}
+
+#'detection delay
+#'
+#'Internal function that generates data and reports the detection delay of FLOC
+#'
+#'@param N integer; number of data points in a bin
+#'@param rhoj numerical; threshold for the jump part of the algorithm.
+#'@param rhok numerical; threshold for the kink part of the algorithm.
+#'@param k integer; number of observations that are available as historical data
+#'@param jump numerical; size of the jump, size of change in the intercept at 
+#'the changepoint
+#'@param kink numerical; size of the kink, size of change in the slope
+#'@param max_n integer; number of observations after which the algoithm stops
+#'
+#'@return integer; detection delay
+#'
+#'@keywords internal
+
+detection_delay <- function(N, rhoj, rhok, k, jump, kink, max_n = 1e7){
+  
+  #generate historical data under the null and initialize detector
+  data <- rnorm(k)
+  detector <- FLOC_init(data, N, rhoj, rhok)
+  
+  while(detector$iteration <= max_n){
+    
+    #iterate the detector with observation after change
+    data <- rnorm(1) + jump + (detector$iteration + 1) * kink 
+    detector <- FLOC_iter(data, detector)
+    
+    if(detector$detect_jump | detector$detect_kink){
+      
+      #return the iteration of the detection
+      return(detector$iteration)
+      
+    }
+  }
+  
+  #No change detected in max_n observations after the change
+  return(Inf)
+}
+
+
