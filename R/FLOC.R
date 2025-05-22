@@ -4,7 +4,8 @@
 #'
 #'@param data numerical vector; historical data that is available to estimate
 #'the prechange distribution from.
-#'@param N integer; number of data points in a bin
+#'@param NJ integer; number of data points in a jump bin
+#'@param NK integer; number of data points in a kink bin
 #'@param rhoj numerical; threshold for the jump part of the algorithm.
 #'@param rhok numerical; threshold for the kink part of the algorithm.
 #'
@@ -14,11 +15,13 @@
 #'detect_kink - Boolean; True if a detection was made by the kink test statistic
 #' in this iteration
 #'iteration - integer; number of the iteration
-#'S - numerical vector; Sums of the bins
+#'SJ - numerical vector; Sums of the bins for a jump
+#'SK - numerical vector; Sums of the bins for a kink
 #'W - numerical vector; weighted sums of the bins
 #'Tstat - numerical vector; the current test statistic
-#'f - objedt of class "lm"; estimate of the pre change distribution
-#'N - integer; number of data points in a bin
+#'f - object of class "lm"; estimate of the pre change distribution
+#'NJ - integer; number of data points in a jump bin
+#'NK - integer; number of data points in a kink bin
 #'rhoj - numerical; threshold for the jump part of the algorithm.
 #'rhok - numerical; threshold for the kink part of the algorithm.
 #'
@@ -28,7 +31,7 @@
 #'
 
 
-FLOC_init <- function(data, N, rhoj, rhok){
+FLOC_init <- function(data, NJ, NK, rhoj, rhok){
 
   #indices of the historical data
   x <- (1-length(data)):0
@@ -38,20 +41,23 @@ FLOC_init <- function(data, N, rhoj, rhok){
   data <- data - unname(predict(f,list(x)))
 
   #initialize the bins
-  S <- S_init(data, N)
-  W <- W_init(data, N)
+  SJ <- S_init(data, NJ)
+  SK <- S_init(data, NK)
+  W <- W_init(data, NK)
 
   #initialize the test statistic
-  Tstat <- c(Tstat_j_calc(S,N,N),Tstat_k_calc(S,W,N,N))
+  Tstat <- c(Tstat_j_calc(SJ,NJ,NJ),Tstat_k_calc(SK,W,NK,NK))
 
   return(list(detect_jump = FALSE,
               detect_kink = FALSE,
               iteration = 0,
-              S = S,
+              SJ = SJ,
+              SK = SK,
               W = W,
               Tstat = Tstat,
               f = f,
-              N = N,
+              NJ = NJ,
+              NK = NK,
               rhoj = rhoj,
               rhok = rhok
               ))
@@ -71,11 +77,13 @@ FLOC_init <- function(data, N, rhoj, rhok){
 #'detect_kink - Boolean; True if a detection was made by the kink test statistic
 #' in this iteration
 #'iteration - integer; number of the iteration
-#'S - numerical vector; Sums of the bins
+#'SJ - numerical vector; Sums of the bins for a jump
+#'SK - numerical vector; Sums of the bins for a kink
 #'W - numerical vector; weighted sums of the bins
 #'Tstat - numerical vector; the current test statistic
-#'f - objedt of class "lm"; estimate of the pre change distribution
-#'N - integer; number of data points in a bin
+#'f - object of class "lm"; estimate of the pre change distribution
+#'NJ - integer; number of data points in a jump bin
+#'NK - integer; number of data points in a kink bin
 #'rhoj - numerical; threshold for the jump part of the algorithm.
 #'rhok - numerical; threshold for the kink part of the algorithm.
 #'
@@ -87,10 +95,12 @@ FLOC_iter <- function(data,detector){
 
   #needed variables from detector
   iteration = detector$iteration
-  S = detector$S
+  SJ = detector$SJ
+  SK = detector$SK
   W = detector$W
   f = detector$f
-  N = detector$N
+  NJ = detector$NJ
+  NK = detector$NK
   rhoj = detector$rhoj
   rhok = detector$rhok
 
@@ -102,7 +112,8 @@ FLOC_iter <- function(data,detector){
 
   #shift the bins if a new bin is started
   if(r == 1){
-    S <- c(S[-1],0)
+    SJ <- c(SJ[-1],0)
+    SK <- c(SK[-1],0)
     W <- c(W[-1],0)
   }
 
@@ -110,12 +121,13 @@ FLOC_iter <- function(data,detector){
   data <- data - unname(predict(f,list(x = iteration)))
 
   #add observation to bins
-  S[3] <- S[3] + data
+  SJ[3] <- SJ[3] + data
+  SK[3] <- SK[3] + data
   W[3] <- W[3] + r * data
 
   #calculate test statistics
-  Tstat_jump <- Tstat_j_calc(S, N, r)
-  Tstat_kink <- Tstat_k_calc(S, W, N, r)
+  Tstat_jump <- Tstat_j_calc(SJ, NJ, r)
+  Tstat_kink <- Tstat_k_calc(SK, W, NK, r)
 
   #do detections
   detect_jump <- Tstat_jump >= rhoj
@@ -124,11 +136,13 @@ FLOC_iter <- function(data,detector){
   return(list(detect_jump = detect_jump,
               detect_kink = detect_kink,
               iteration = iteration,
-              S = S,
+              SJ = SJ,
+              SK = SK,
               W = W,
               Tstat = c(Tstat_jump,Tstat_kink),
               f = f,
-              N = N,
+              NJ = NJ,
+              NK = NK,
               rhoj = rhoj,
               rhok = rhok
   ))

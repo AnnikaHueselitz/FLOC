@@ -3,7 +3,8 @@
 #'Estimates the probability of FLOC that a false alarm occurs before tau observations
 #'for given bin size and thresholds
 #'
-#'@param N integer; number of data points in a bin
+#'@param NJ integer; number of data points in a jump bin
+#'@param NK integer; number of data points in a kink bin
 #'@param rhoj numerical; threshold for the jump part of the algorithm.
 #'@param rhok numerical; threshold for the kink part of the algorithm.
 #'@param tau integer; number of observation to check for a false alarm
@@ -14,10 +15,10 @@
 #'
 #'@export
 
-est_faprob <- function(N, rhoj, rhok, tau, k, m = 200){
+est_faprob <- function(NJ, NK, rhoj, rhok, tau, k, m = 200){
 
   #simulates m times data and checks for a false alarm
-  fa <- replicate(m, false_alarm(N, rhoj, rhok, tau, k))
+  fa <- replicate(m, false_alarm(NJ, NK, rhoj, rhok, tau, k))
 
   return(sum(fa)/m)
 }
@@ -26,7 +27,8 @@ est_faprob <- function(N, rhoj, rhok, tau, k, m = 200){
 #'
 #'Internal function that checks if a false alarm occurs before tau observations
 #'
-#'@param N integer; number of data points in a bin
+#'@param NJ integer; number of data points in a jump bin
+#'@param NK integer; number of data points in a kink bin
 #'@param rhoj numerical; threshold for the jump part of the algorithm.
 #'@param rhok numerical; threshold for the kink part of the algorithm.
 #'@param tau integer; number of observation to check for a false alarm
@@ -38,11 +40,11 @@ est_faprob <- function(N, rhoj, rhok, tau, k, m = 200){
 #'
 #'@keywords internal
 
-false_alarm <- function(N, rhoj, rhok, tau, k){
+false_alarm <- function(NJ, NK, rhoj, rhok, tau, k){
 
   #generate historic data and initialize the detector
   data <- rnorm(k)
-  detector <- FLOC_init(data, N, rhoj, rhok)
+  detector <- FLOC_init(data, NJ, NK, rhoj, rhok)
 
 
   while(detector$iteration <= tau){
@@ -69,7 +71,8 @@ false_alarm <- function(N, rhoj, rhok, tau, k){
 #'Estimates the expected detection delay for given bin size, thresholds and
 #'change sizes
 #'
-#'@param N integer; number of data points in a bin
+#'@param NJ integer; number of data points in a jump bin
+#'@param NK integer; number of data points in a kink bin
 #'@param rhoj numerical; threshold for the jump part of the algorithm.
 #'@param rhok numerical; threshold for the kink part of the algorithm.
 #'@param k integer; number of observations that are available as historical data
@@ -83,10 +86,10 @@ false_alarm <- function(N, rhoj, rhok, tau, k){
 #'
 #'@export
 
-est_detdel <- function(N, rhoj, rhok, k, jump, kink, m = 200){
+est_detdel <- function(NJ, NK, rhoj, rhok, k, jump, kink, m = 200){
 
   #generates data m times and reports the detection delay
-  detdel <- replicate(m, detection_delay(N, rhoj, rhok,  k, jump, kink))
+  detdel <- replicate(m, detection_delay(NJ, NK, rhoj, rhok,  k, jump, kink))
 
   return(round(mean(detdel)))
 }
@@ -95,7 +98,8 @@ est_detdel <- function(N, rhoj, rhok, k, jump, kink, m = 200){
 #'
 #'Internal function that generates data and reports the detection delay of FLOC
 #'
-#'@param N integer; number of data points in a bin
+#'@param NJ integer; number of data points in a jump bin
+#'@param NK integer; number of data points in a kink bin
 #'@param rhoj numerical; threshold for the jump part of the algorithm.
 #'@param rhok numerical; threshold for the kink part of the algorithm.
 #'@param k integer; number of observations that are available as historical data
@@ -110,11 +114,11 @@ est_detdel <- function(N, rhoj, rhok, k, jump, kink, m = 200){
 #'
 #'@keywords internal
 
-detection_delay <- function(N, rhoj, rhok, k, jump, kink, max_n = 1e7){
+detection_delay <- function(NJ, NK, rhoj, rhok, k, jump, kink, max_n = 1e7){
 
   #generate historical data under the null and initialize detector
   data <- rnorm(k)
-  detector <- FLOC_init(data, N, rhoj, rhok)
+  detector <- FLOC_init(data, NJ, NK, rhoj, rhok)
 
   while(detector$iteration <= max_n){
 
