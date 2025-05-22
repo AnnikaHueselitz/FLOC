@@ -108,11 +108,15 @@ FLOC_iter <- function(data,detector){
   iteration <- iteration + 1
 
   #number of observations in last bin
-  r <- (iteration -1) %% N + 1
+  rJ <- (iteration -1) %% NJ + 1
+  rK <- (iteration -1) %% NK + 1
 
   #shift the bins if a new bin is started
-  if(r == 1){
+  if(rJ == 1){
     SJ <- c(SJ[-1],0)
+  }
+
+  if(rK == 1){
     SK <- c(SK[-1],0)
     W <- c(W[-1],0)
   }
