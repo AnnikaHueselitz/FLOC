@@ -4,10 +4,12 @@
 \alias{est_detdel}
 \title{estimate expected detection delay}
 \usage{
-est_detdel(N, rhoj, rhok, k, jump, kink, m = 200)
+est_detdel(NJ, NK, rhoj, rhok, k, jump, kink, m = 200)
 }
 \arguments{
-\item{N}{integer; number of data points in a bin}
+\item{NJ}{integer; number of data points in a jump bin}
+
+\item{NK}{integer; number of data points in a kink bin}
 
 \item{rhoj}{numerical; threshold for the jump part of the algorithm.}
 

@@ -4,10 +4,12 @@
 \alias{detection_delay}
 \title{detection delay}
 \usage{
-detection_delay(N, rhoj, rhok, k, jump, kink, max_n = 1e+07)
+detection_delay(NJ, NK, rhoj, rhok, k, jump, kink, max_n = 1e+07)
 }
 \arguments{
-\item{N}{integer; number of data points in a bin}
+\item{NJ}{integer; number of data points in a jump bin}
+
+\item{NK}{integer; number of data points in a kink bin}
 
 \item{rhoj}{numerical; threshold for the jump part of the algorithm.}
 

@@ -4,10 +4,12 @@
 \alias{est_faprob}
 \title{estimate false alarm probability}
 \usage{
-est_faprob(N, rhoj, rhok, tau, k, m = 200)
+est_faprob(NJ, NK, rhoj, rhok, tau, k, m = 200)
 }
 \arguments{
-\item{N}{integer; number of data points in a bin}
+\item{NJ}{integer; number of data points in a jump bin}
+
+\item{NK}{integer; number of data points in a kink bin}
 
 \item{rhoj}{numerical; threshold for the jump part of the algorithm.}
 

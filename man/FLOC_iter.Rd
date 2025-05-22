@@ -18,11 +18,13 @@ in this iteration
 detect_kink - Boolean; True if a detection was made by the kink test statistic
 in this iteration
 iteration - integer; number of the iteration
-S - numerical vector; Sums of the bins
+SJ - numerical vector; Sums of the bins for a jump
+SK - numerical vector; Sums of the bins for a kink
 W - numerical vector; weighted sums of the bins
 Tstat - numerical vector; the current test statistic
-f - objedt of class "lm"; estimate of the pre change distribution
-N - integer; number of data points in a bin
+f - object of class "lm"; estimate of the pre change distribution
+NJ - integer; number of data points in a jump bin
+NK - integer; number of data points in a kink bin
 rhoj - numerical; threshold for the jump part of the algorithm.
 rhok - numerical; threshold for the kink part of the algorithm.
 }

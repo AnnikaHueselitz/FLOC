@@ -4,10 +4,12 @@
 \alias{false_alarm}
 \title{#false alarm probability}
 \usage{
-false_alarm(N, rhoj, rhok, tau, k)
+false_alarm(NJ, NK, rhoj, rhok, tau, k)
 }
 \arguments{
-\item{N}{integer; number of data points in a bin}
+\item{NJ}{integer; number of data points in a jump bin}
+
+\item{NK}{integer; number of data points in a kink bin}
 
 \item{rhoj}{numerical; threshold for the jump part of the algorithm.}
 

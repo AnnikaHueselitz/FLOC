@@ -4,10 +4,12 @@
 \alias{t_tuning}
 \title{threshold tuning}
 \usage{
-t_tuning(N, tau, k, eta = 0.5, r = 1000)
+t_tuning(NJ, NK, tau, k, eta = 0.5, r = 1000)
 }
 \arguments{
-\item{N}{integer; number of data points in a bin}
+\item{NJ}{integer; number of data points in a jump bin}
+
+\item{NK}{integer; number of data points in a kink bin}
 
 \item{tau}{integer; number of observations so that P(hat tau < tau) <= eta}
 
