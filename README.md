@@ -4,6 +4,7 @@
 # FLOC : Fast Limited-memory Optimal Change detector
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 The goal of FLOC is to sequentially detect a change in a piecewise
@@ -39,8 +40,9 @@ library(FLOC)
 #set seed for reproducibility
 set.seed(1)
 
-#bin size
-N <- 5
+#bin size for a jump and a kink
+NJ <- 5
+NK <- 10
 
 #amount of historical data
 k <- 500
@@ -53,7 +55,7 @@ tau <- 500
 r <- 1000
 
 #tuning of the threshold
-rho <- t_tuning(N, tau, k, eta, r)
+rho <- t_tuning(NJ, NK, tau, k, eta, r)
 ```
 
 Next we want to simulate some data to test the algorithm on:
@@ -81,7 +83,7 @@ beta_plus <- 0.1
 hist_data <- rnorm(k) + seg_lin_fun((1 - k):0, tau_0, alpha_minus, beta_minus, alpha_plus, beta_plus)
 
 #initalize the detector
-detector <- FLOC_init(hist_data, N, rho$both["jump"], rho$both["kink"])
+detector <- FLOC_init(hist_data, NJ, NK, rho$both["jump"], rho$both["kink"])
 
 #initialize time and vector to save data for plot
 n <- 1
@@ -106,8 +108,18 @@ if (n <= tau_0) {
   print(paste("A detection was made at observation: ",n, "That is a false alarm"))
 } else {
 print(paste("A detection was made at observation: ",n, "That is a detection delay of: ", n - tau_0))
+  if(detector$detect_jump && detector$detect_kink){
+    print("Both detector made a detection simultaneously.")
+  }
+  else if(detector$detect_jump){
+    print("The jump detector made the detection.")
+  }
+  else {
+    print("The kink detector made the detection.")
+  }
 }
 #> [1] "A detection was made at observation:  207 That is a detection delay of:  7"
+#> [1] "The jump detector made the detection."
 ```
 
 Plot the detection to visualize it:
@@ -123,14 +135,14 @@ Next we can check if the false alarm probability that we wanted to
 achieve with the threshold tuning is reasonable, by estimating it:
 
 ``` r
-est_faprob(N, rho$both["jump"], rho$both["kink"], tau, k)
-#> [1] 0.56
+est_faprob(NJ, NK, rho$both["jump"], rho$both["kink"], tau, k)
+#> [1] 0.525
 ```
 
 Last we can check estimate the expected detection delay for the above
 example:
 
 ``` r
-est_detdel(N, rho$both["jump"], rho$both["kink"], k, 1, 0.01)
+est_detdel(NJ, NK, rho$both["jump"], rho$both["kink"], k, 1, 0.01)
 #> [1] 12
 ```
