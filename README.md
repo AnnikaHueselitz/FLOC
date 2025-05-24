@@ -136,13 +136,22 @@ achieve with the threshold tuning is reasonable, by estimating it:
 
 ``` r
 est_faprob(NJ, NK, rho$both["jump"], rho$both["kink"], tau, k)
-#> [1] 0.525
+#> [1] 0.57
 ```
 
-Last we can check estimate the expected detection delay for the above
+Next we can check estimate the expected detection delay for the above
 example:
 
 ``` r
 est_detdel(NJ, NK, rho$both["jump"], rho$both["kink"], k, 1, 0.01)
 #> [1] 12
+```
+
+Last we can estimate the probability for each detector to detect the
+change first in the above example:
+
+``` r
+est_dettype(NJ, NK, rho$both["jump"], rho$both["kink"], k, 1, 0.01)
+#>   both  jump  kink
+#> 1 0.42 0.455 0.125
 ```

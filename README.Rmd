@@ -149,8 +149,14 @@ Next we can check if the false alarm probability that we wanted to achieve with 
 est_faprob(NJ, NK, rho$both["jump"], rho$both["kink"], tau, k)
 ```
 
-Last we can check estimate the expected detection delay for the above example:
+Next we can check estimate the expected detection delay for the above example:
 
 ```{r expected detection delay}
 est_detdel(NJ, NK, rho$both["jump"], rho$both["kink"], k, 1, 0.01)
+```
+
+Last we can estimate the probability for each detector to detect the change first in the above example:
+
+```{r expected detection type probability}
+est_dettype(NJ, NK, rho$both["jump"], rho$both["kink"], k, 1, 0.01)
 ```
