@@ -127,7 +127,7 @@ FLOC_iter <- function(data,detector){
   #add observation to bins
   SJ[3] <- SJ[3] + data
   SK[3] <- SK[3] + data
-  #W[3] <- W[3] + rK * data
+  W[3] <- W[3] + rK * data
 
   #calculate test statistics
   Tstat_jump <- Tstat_j_calc(SJ, NJ, rJ)

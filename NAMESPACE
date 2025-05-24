@@ -3,6 +3,7 @@
 export(FLOC_init)
 export(FLOC_iter)
 export(est_detdel)
+export(est_dettype)
 export(est_faprob)
 export(plot_detection)
 export(seg_lin_fun)

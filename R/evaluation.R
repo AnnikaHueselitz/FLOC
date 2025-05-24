@@ -168,4 +168,96 @@ seg_lin_fun <- function(x,
   return(c(f1,f2))
 }
 
+#'estimate detection type
+#'
+#'Estimates the probability with which both detectors detect the change
+#'simultaneously, the jump detector detects the change first or the kink
+#'detector detects the change first.
+#'
+#'@param NJ integer; number of data points in a jump bin
+#'@param NK integer; number of data points in a kink bin
+#'@param rhoj numerical; threshold for the jump part of the algorithm.
+#'@param rhok numerical; threshold for the kink part of the algorithm.
+#'@param k integer; number of observations that are available as historical data
+#'@param jump numerical; size of the jump, size of change in the intercept at
+#'the changepoint
+#'@param kink numerical; size of the kink, size of change in the slope
+#'@param m integer; = 200; number of repetitions
+#'
+#'@return data.frame; both = estimate probability for a simultaneous detection,
+#'                    jump = estimated probability for a jump detection first
+#'                    kink = estimated probability for a kink detection first
+#'
+#'@export
+
+est_dettype <- function(NJ, NK, rhoj, rhok, k, jump, kink, m = 200){
+
+  #generates data m times and reports the detection type
+  dettype <- replicate(m, detection_type(NJ, NK, rhoj, rhok,  k, jump, kink), simplify = TRUE)
+
+  jump <- sum(dettype == "jump")/m
+  kink <- sum(dettype == "kink")/m
+  both <- sum(dettype == "both")/m
+
+  return(data.frame(both = both, jump = jump, kink = kink))
+}
+
+#'detection delay
+#'
+#'Internal function that generates data and reports which detector
+#'detects the change first.
+#'
+#'@param NJ integer; number of data points in a jump bin
+#'@param NK integer; number of data points in a kink bin
+#'@param rhoj numerical; threshold for the jump part of the algorithm.
+#'@param rhok numerical; threshold for the kink part of the algorithm.
+#'@param k integer; number of observations that are available as historical data
+#'@param jump numerical; size of the jump, size of change in the intercept at
+#'the changepoint
+#'@param kink numerical; size of the kink, size of change in the slope
+#'@param max_n integer; number of observations after which the algoithm stops
+#'
+#'@return string; "both"- if both detectorr detect simultaneously
+#'                "jump" - if the jump detector detects first
+#'                "kink" - if the kink detector detects first
+#'                "none" - if no detection was made
+#'
+#'@importFrom stats rnorm
+#'
+#'@keywords internal
+
+detection_type <- function(NJ, NK, rhoj, rhok, k, jump, kink, max_n = 1e7){
+
+  #generate historical data under the null and initialize detector
+  data <- rnorm(k)
+  detector <- FLOC_init(data, NJ, NK, rhoj, rhok)
+
+  while(detector$iteration <= max_n){
+
+    #iterate the detector with observation after change
+    data <- rnorm(1) + jump + (detector$iteration + 1) * kink
+    detector <- FLOC_iter(data, detector)
+
+    if(detector$detect_jump && detector$detect_kink){
+
+      return("both")
+
+    }
+    else if(detector$detect_jump){
+
+      return("jump")
+
+    }
+    else if(detector$detect_kink){
+
+      return("kink")
+
+    }
+
+
+  }
+
+  #No change detected in max_n observations after the change
+  return("none")
+}
 
