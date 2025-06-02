@@ -238,6 +238,7 @@ detection_type <- function(NJ, NK, rhoj, rhok, k, jump, kink, max_n = 1e7){
     data <- rnorm(1) + jump + (detector$iteration + 1) * kink
     detector <- FLOC_iter(data, detector)
 
+    #Check if a detection was made and which detector makes a detection
     if(detector$detect_jump && detector$detect_kink){
 
       return("both")
@@ -260,4 +261,6 @@ detection_type <- function(NJ, NK, rhoj, rhok, k, jump, kink, max_n = 1e7){
   #No change detected in max_n observations after the change
   return("none")
 }
+
+
 
