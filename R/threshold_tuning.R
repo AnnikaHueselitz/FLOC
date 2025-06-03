@@ -40,9 +40,10 @@ t_tuning <- function(NJ, NK, tau, k, eta = 0.5, r = 1000){
   }
 
   #setting the combined threshold as the quantile
-  rhob <- c(max_Tstat_sorted[q,"jump"], max_Tstat_sorted[q,"kink"])
+  rhobj <- max_Tstat_sorted[q,"jump"]
+  rhobk <- max_Tstat_sorted[q,"kink"]
 
-  thresholds = list(jump =  unname(rhoj), kink = unname(rhok), both = rhob)
+  thresholds = list(jump =  unname(rhoj), kink = unname(rhok), both_jump = unname(rhobj), both_kink = unname(rhobk))
 
   return(thresholds)
 }
