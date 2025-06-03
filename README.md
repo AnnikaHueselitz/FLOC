@@ -83,7 +83,7 @@ beta_plus <- 0.1
 hist_data <- rnorm(k) + seg_lin_fun((1 - k):0, tau_0, alpha_minus, beta_minus, alpha_plus, beta_plus)
 
 #initalize the detector
-detector <- FLOC_init(hist_data, NJ, NK, rho$both["jump"], rho$both["kink"])
+detector <- FLOC_init(hist_data, NJ, NK, rho$both_jump, rho$both_kink)
 
 #initialize time and vector to save data for plot
 n <- 1
@@ -135,7 +135,7 @@ Next we can check if the false alarm probability that we wanted to
 achieve with the threshold tuning is reasonable, by estimating it:
 
 ``` r
-est_faprob(NJ, NK, rho$both["jump"], rho$both["kink"], tau, k)
+est_faprob(NJ, NK, rho$both_jump, rho$both_kink, tau, k)
 #> [1] 0.57
 ```
 
@@ -143,7 +143,7 @@ Next we can check estimate the expected detection delay for the above
 example:
 
 ``` r
-est_detdel(NJ, NK, rho$both["jump"], rho$both["kink"], k, 1, 0.01)
+est_detdel(NJ, NK, rho$both_jump, rho$both_kink, k, 1, 0.01)
 #> [1] 12
 ```
 
@@ -151,7 +151,7 @@ Last we can estimate the probability for each detector to detect the
 change first in the above example:
 
 ``` r
-est_dettype(NJ, NK, rho$both["jump"], rho$both["kink"], k, 1, 0.01)
+est_dettype(NJ, NK, rho$both_jump, rho$both_kink, k, 1, 0.01)
 #>   both  jump  kink
 #> 1 0.42 0.455 0.125
 ```
