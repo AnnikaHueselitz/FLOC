@@ -12,9 +12,10 @@
 #'@param r integer; number of simulated maximal test statistics
 #'
 #'@return list with:
-#'rhoj - threshold for only jump
-#'rhok - threshold for only kink
-#'rhob - thrshold for jump and kink
+#'jump - threshold for only jump detector
+#'kink - threshold for only kink detector
+#'both_jump - threshold for jump part if running both detectors
+#'both_kink -threshold for kink part if running both detectors
 #'
 #'@export
 
