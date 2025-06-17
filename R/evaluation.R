@@ -91,7 +91,7 @@ est_detdel <- function(NJ, NK, rhoj, rhok, k, jump, kink, m = 200){
   #generates data m times and reports the detection delay
   detdel <- replicate(m, detection_delay(NJ, NK, rhoj, rhok,  k, jump, kink))
 
-  return(round(mean(detdel)))
+  return(mean(detdel))
 }
 
 #'detection delay
