@@ -80,16 +80,18 @@ false_alarm <- function(NJ, NK, rhoj, rhok, tau, k){
 #'the changepoint
 #'@param kink numerical; size of the kink, size of change in the slope
 #'@param m integer; = 200; number of repetitions
+#'@param max_n integer; number of observations after which the algorithm stops
+#'early if no detection is made
 #'
 #'@return integer; estimate of the expected detection delay rounded to the next
 #'integer
 #'
 #'@export
 
-est_detdel <- function(NJ, NK, rhoj, rhok, k, jump, kink, m = 200){
+est_detdel <- function(NJ, NK, rhoj, rhok, k, jump, kink, m = 200, max_n = 1e7 ){
 
   #generates data m times and reports the detection delay
-  detdel <- replicate(m, detection_delay(NJ, NK, rhoj, rhok,  k, jump, kink))
+  detdel <- replicate(m, detection_delay(NJ, NK, rhoj, rhok,  k, jump, kink, max_n))
 
   return(mean(detdel))
 }
@@ -106,7 +108,8 @@ est_detdel <- function(NJ, NK, rhoj, rhok, k, jump, kink, m = 200){
 #'@param jump numerical; size of the jump, size of change in the intercept at
 #'the changepoint
 #'@param kink numerical; size of the kink, size of change in the slope
-#'@param max_n integer; number of observations after which the algoithm stops
+#'@param max_n integer; number of observations after which the algorithm stops
+#'early if no detection is made
 #'
 #'@return integer; detection delay
 #'
@@ -183,6 +186,8 @@ seg_lin_fun <- function(x,
 #'the changepoint
 #'@param kink numerical; size of the kink, size of change in the slope
 #'@param m integer; = 200; number of repetitions
+#'@param max_n integer; number of observations after which the algorithm stops
+#'early if no detection is made
 #'
 #'@return data.frame; both = estimate probability for a simultaneous detection,
 #'                    jump = estimated probability for a jump detection first
@@ -190,10 +195,10 @@ seg_lin_fun <- function(x,
 #'
 #'@export
 
-est_dettype <- function(NJ, NK, rhoj, rhok, k, jump, kink, m = 200){
+est_dettype <- function(NJ, NK, rhoj, rhok, k, jump, kink, m = 200, max_n = 1e7){
 
   #generates data m times and reports the detection type
-  dettype <- replicate(m, detection_type(NJ, NK, rhoj, rhok,  k, jump, kink), simplify = TRUE)
+  dettype <- replicate(m, detection_type(NJ, NK, rhoj, rhok,  k, jump, kink, max_n), simplify = TRUE)
 
   jump <- sum(dettype == "jump")/m
   kink <- sum(dettype == "kink")/m
@@ -215,9 +220,10 @@ est_dettype <- function(NJ, NK, rhoj, rhok, k, jump, kink, m = 200){
 #'@param jump numerical; size of the jump, size of change in the intercept at
 #'the changepoint
 #'@param kink numerical; size of the kink, size of change in the slope
-#'@param max_n integer; number of observations after which the algoithm stops
+#'@param max_n integer; number of observations after which the algorithm stops
+#'early if no detection is made
 #'
-#'@return string; "both"- if both detectorr detect simultaneously
+#'@return string; "both"- if both detector detect simultaneously
 #'                "jump" - if the jump detector detects first
 #'                "kink" - if the kink detector detects first
 #'                "none" - if no detection was made
