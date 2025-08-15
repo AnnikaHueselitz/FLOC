@@ -4,10 +4,10 @@
 #'
 #'@param data numerical vector; historical data that is available to estimate
 #'the prechange distribution from.
-#'@param NJ integer; number of data points in a jump bin
-#'@param NK integer; number of data points in a kink bin
-#'@param rhoj numerical; threshold for the jump part of the algorithm.
-#'@param rhok numerical; threshold for the kink part of the algorithm.
+#'@param NJ integer vector; number of data points in a jump bin
+#'@param NK integer vector; number of data points in a kink bin
+#'@param rhoj numerical vector; threshold for the jump part of the algorithm.
+#'@param rhok numerical vector; threshold for the kink part of the algorithm.
 #'
 #'@return list with
 #'detect_jump - Boolean; True if a detection was made by the jump test statistic
@@ -18,12 +18,13 @@
 #'SJ - numerical vector; Sums of the bins for a jump
 #'SK - numerical vector; Sums of the bins for a kink
 #'W - numerical vector; weighted sums of the bins
-#'Tstat - numerical vector; the current test statistic
+#'Tstat_jump - numerical vector; the current jump test statistic
+#'Tstat_kink - numerical vector; the current kink test statistic
 #'f - object of class "lm"; estimate of the pre change distribution
-#'NJ - integer; number of data points in a jump bin
-#'NK - integer; number of data points in a kink bin
-#'rhoj - numerical; threshold for the jump part of the algorithm.
-#'rhok - numerical; threshold for the kink part of the algorithm.
+#'NJ - integer vector; number of data points in a jump bin
+#'NK - integer vector; number of data points in a kink bin
+#'rhoj - numerical vector; threshold for the jump part of the algorithm.
+#'rhok - numerical vector; threshold for the kink part of the algorithm.
 #'
 #'@importFrom stats lm predict
 #'
@@ -41,12 +42,16 @@ FLOC_init <- function(data, NJ, NK, rhoj, rhok){
   data <- data - unname(predict(f,list(x)))
 
   #initialize the bins
-  SJ <- S_init(data, NJ)
-  SK <- S_init(data, NK)
-  W <- W_init(data, NK)
+  SJ <- sapply(NJ, S_init, data = data)
+  SK <- sapply(NK, S_init, data = data)
+  W <- sapply(NK, W_init, data = data)
 
   #initialize the test statistic
-  Tstat <- c(Tstat_j_calc(SJ,NJ,NJ),Tstat_k_calc(SK,W,NK,NK))
+  Tstat_jump <- sapply(1:length(NJ),
+                       function(i) Tstat_j_calc(S = SJ[,i], N = NJ[i], r = NJ[i]))
+  Tstat_kink <- sapply(1:length(NK),
+                       function(i) Tstat_k_calc(S = SK[,i], W = W[,i],
+                                                        N = NK[i], r = NK[i]))
 
   return(list(detect_jump = FALSE,
               detect_kink = FALSE,
@@ -54,7 +59,8 @@ FLOC_init <- function(data, NJ, NK, rhoj, rhok){
               SJ = SJ,
               SK = SK,
               W = W,
-              Tstat = Tstat,
+              Tstat_jump = Tstat_jump,
+              Tstat_kink = Tstat_kink,
               f = f,
               NJ = NJ,
               NK = NK,
@@ -80,12 +86,13 @@ FLOC_init <- function(data, NJ, NK, rhoj, rhok){
 #'SJ - numerical vector; Sums of the bins for a jump
 #'SK - numerical vector; Sums of the bins for a kink
 #'W - numerical vector; weighted sums of the bins
-#'Tstat - numerical vector; the current test statistic
+#'Tstat_jump - numerical vector; the current jump test statistic
+#'Tstat_kink - numerical vector; the current kink test statistic
 #'f - object of class "lm"; estimate of the pre change distribution
-#'NJ - integer; number of data points in a jump bin
-#'NK - integer; number of data points in a kink bin
-#'rhoj - numerical; threshold for the jump part of the algorithm.
-#'rhok - numerical; threshold for the kink part of the algorithm.
+#'NJ - integer vector; number of data points in a jump bin
+#'NK - integer vector; number of data points in a kink bin
+#'rhoj - numerical vector; threshold for the jump part of the algorithm.
+#'rhok - numerical vector; threshold for the kink part of the algorithm.
 #'
 #'@export
 #'
@@ -108,34 +115,52 @@ FLOC_iter <- function(data,detector){
   iteration <- iteration + 1
 
   #number of observations in last bin
-  rJ <- (iteration -1) %% NJ + 1
-  rK <- (iteration -1) %% NK + 1
-
-  #shift the bins if a new bin is started
-  if(rJ == 1){
-    SJ <- c(SJ[-1],0)
-  }
-
-  if(rK == 1){
-    SK <- c(SK[-1],0)
-    W <- c(W[-1],0)
-  }
+  rJ <- sapply(NJ, function(i) (iteration -1) %% i + 1)
+  rK <- sapply(NK, function(i) (iteration -1) %% i + 1)
 
   #substract prechange prediction
   data <- data - unname(predict(f,list(x = iteration)))
 
-  #add observation to bins
-  SJ[3] <- SJ[3] + data
-  SK[3] <- SK[3] + data
-  W[3] <- W[3] + rK * data
+
+  for(i in 1:length(NJ)){
+    #shift the bins if a new bin is started
+    if(rJ[i] == 1){
+      SJ[,i] <- c(SJ[-1,i],0)
+    }
+
+    #add observation to bins
+    SJ[3,i] <- SJ[3,i] + data
+  }
+
+  for(i in 1:length(NK)){
+
+    #shift the bins if a new bin is started
+    if(rK[i] == 1){
+      SK[,i] <- c(SK[-1,i],0)
+      W[,i] <- c(W[-1,i],0)
+    }
+
+    #add observation to bins
+    SK[3,i] <- SK[3,i] + data
+    W[3,i] <- W[3,i] + rK[i] * data
+  }
+
+
+
+
+
 
   #calculate test statistics
-  Tstat_jump <- Tstat_j_calc(SJ, NJ, rJ)
-  Tstat_kink <- Tstat_k_calc(SK, W, NK, rK)
+  Tstat_jump <- sapply(1:length(NJ),
+                       function(i) Tstat_j_calc(S = SJ[,i], N = NJ[i], r = NJ[i]))
+  Tstat_kink <- sapply(1:length(NK),
+                       function(i) Tstat_k_calc(S = SK[,i], W = W[,i],
+                                                N = NK[i], r = NK[i]))
+
 
   #do detections
-  detect_jump <- Tstat_jump >= rhoj
-  detect_kink <- Tstat_kink >= rhok
+  detect_jump <- any(Tstat_jump >= rhoj)
+  detect_kink <- any(Tstat_kink >= rhok)
 
   return(list(detect_jump = detect_jump,
               detect_kink = detect_kink,
@@ -143,7 +168,8 @@ FLOC_iter <- function(data,detector){
               SJ = SJ,
               SK = SK,
               W = W,
-              Tstat = c(Tstat_jump,Tstat_kink),
+              Tstat_jump = Tstat_jump,
+              Tstat_kink = Tstat_kink,
               f = f,
               NJ = NJ,
               NK = NK,

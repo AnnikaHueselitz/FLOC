@@ -1,7 +1,7 @@
 #'threshold tuning
 #'
 #'tunes the thrsehold for the FLOC algorithm to reach a desired false alarm
-#'probability
+#'probability or average run length
 #'
 #'@param NJ integer; number of data points in a jump bin
 #'@param NK integer; number of data points in a kink bin
@@ -183,13 +183,13 @@ max_quantile <- function(q, r, eta,  max_Tstat, max_Tstat_sorted){
 
 }
 
-#'threshold tuning
+#'threshold tuning for multiple bin sizes
 #'
 #'tunes the thrsehold for the FLOC algorithm to reach a desired false alarm
-#'probability
+#'probability or average run length for multiple bin sizes
 #'
-#'@param NJ integer; number of data points in a jump bin
-#'@param NK integer; number of data points in a kink bin
+#'@param NJ integer vector; number of data points in a jump bin
+#'@param NK integer vector; number of data points in a kink bin
 #'@param tau integer; number of observations so that P(hat tau < tau) <= eta
 #'@param k integer; number of observations that are available as historical data
 #'@param eta numerical between 0 ane 1, probability such that
@@ -262,13 +262,13 @@ t_tuning_mult <- function(NJ, NK, k,tau = NULL, eta = NULL, arl = NULL, r = 1000
   return(thresholds)
 }
 
-#'maximal Test statistic calculate
+#'maximal Test statistic calculate for multiple bin sizes
 #'
 #'Internal function that generates data and calculates the maximal test
-#'statistic
+#'statistic for multiple bin sizes
 #'
-#'@param NJ integer; number of data points in a jump bin
-#'@param NK integer; number of data points in a kink bin
+#'@param NJ integer vector; number of data points in a jump bin
+#'@param NK integer vector; number of data points in a kink bin
 #'@param tau integer; number of observations so that P(hat tau < tau) <= eta
 #'@param k integer; number of observations that are available as historical data
 #'@param datavec numerical vector; data to calculate the maximal Test statistic
@@ -382,28 +382,3 @@ max_Tstat_calc_mult <- function(NJ, NK, tau, k, datavec = NULL){
   return(c(Tstat_jump,Tstat_kink))
 }
 
-#'maximal test statistic quantile
-#'
-#'Internal function that takes a quantile of the jump and kink and checks if the
-#'desired quantile for both test statistics combined is reached.
-#'
-#'@param q integer; quantile of the singular test statistics
-#'@param r integer; number of maximal test statistics
-#'@param eta numerical between 0 and 1; desired probability for a false alarm
-#'@param max_Tstat numercial list; maximal test statistics
-#'@param max_Tstat_sorted numerical list; maximal test statistics sorted
-#'
-#'@return boolean; true if the desired quantile is reached
-#'
-#'@keywords internal
-
-max_quantile <- function(q, r, eta,  max_Tstat, max_Tstat_sorted){
-
-  #counts test statistics that are greater than  the threshold at quantile q
-  detect <- apply(max_Tstat, 1, function(x) any(x >= max_Tstat_sorted[q,]))
-  detect <- sum(detect)
-
-  #returns true if the count is below the desired quantile
-  return(detect < r * eta)
-
-}
