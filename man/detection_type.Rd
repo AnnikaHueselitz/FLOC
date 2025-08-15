@@ -22,10 +22,11 @@ the changepoint}
 
 \item{kink}{numerical; size of the kink, size of change in the slope}
 
-\item{max_n}{integer; number of observations after which the algoithm stops}
+\item{max_n}{integer; number of observations after which the algorithm stops
+early if no detection is made}
 }
 \value{
-string; "both"- if both detectorr detect simultaneously
+string; "both"- if both detector detect simultaneously
                "jump" - if the jump detector detects first
                "kink" - if the kink detector detects first
                "none" - if no detection was made

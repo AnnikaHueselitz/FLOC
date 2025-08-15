@@ -22,7 +22,8 @@ the changepoint}
 
 \item{kink}{numerical; size of the kink, size of change in the slope}
 
-\item{max_n}{integer; number of observations after which the algoithm stops}
+\item{max_n}{integer; number of observations after which the algorithm stops
+early if no detection is made}
 }
 \value{
 integer; detection delay

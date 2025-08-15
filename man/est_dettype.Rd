@@ -4,7 +4,7 @@
 \alias{est_dettype}
 \title{estimate detection type}
 \usage{
-est_dettype(NJ, NK, rhoj, rhok, k, jump, kink, m = 200)
+est_dettype(NJ, NK, rhoj, rhok, k, jump, kink, m = 200, max_n = 1e+07)
 }
 \arguments{
 \item{NJ}{integer; number of data points in a jump bin}
@@ -23,6 +23,9 @@ the changepoint}
 \item{kink}{numerical; size of the kink, size of change in the slope}
 
 \item{m}{integer; = 200; number of repetitions}
+
+\item{max_n}{integer; number of observations after which the algorithm stops
+early if no detection is made}
 }
 \value{
 data.frame; both = estimate probability for a simultaneous detection,

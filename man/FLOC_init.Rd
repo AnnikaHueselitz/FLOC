@@ -10,13 +10,13 @@ FLOC_init(data, NJ, NK, rhoj, rhok)
 \item{data}{numerical vector; historical data that is available to estimate
 the prechange distribution from.}
 
-\item{NJ}{integer; number of data points in a jump bin}
+\item{NJ}{integer vector; number of data points in a jump bin}
 
-\item{NK}{integer; number of data points in a kink bin}
+\item{NK}{integer vector; number of data points in a kink bin}
 
-\item{rhoj}{numerical; threshold for the jump part of the algorithm.}
+\item{rhoj}{numerical vector; threshold for the jump part of the algorithm.}
 
-\item{rhok}{numerical; threshold for the kink part of the algorithm.}
+\item{rhok}{numerical vector; threshold for the kink part of the algorithm.}
 }
 \value{
 list with
@@ -28,12 +28,13 @@ iteration - integer; number of the iteration
 SJ - numerical vector; Sums of the bins for a jump
 SK - numerical vector; Sums of the bins for a kink
 W - numerical vector; weighted sums of the bins
-Tstat - numerical vector; the current test statistic
+Tstat_jump - numerical vector; the current jump test statistic
+Tstat_kink - numerical vector; the current kink test statistic
 f - object of class "lm"; estimate of the pre change distribution
-NJ - integer; number of data points in a jump bin
-NK - integer; number of data points in a kink bin
-rhoj - numerical; threshold for the jump part of the algorithm.
-rhok - numerical; threshold for the kink part of the algorithm.
+NJ - integer vector; number of data points in a jump bin
+NK - integer vector; number of data points in a kink bin
+rhoj - numerical vector; threshold for the jump part of the algorithm.
+rhok - numerical vector; threshold for the kink part of the algorithm.
 }
 \description{
 Initializes the FLOC, Fast Limited-memory Optimal Change detector.
